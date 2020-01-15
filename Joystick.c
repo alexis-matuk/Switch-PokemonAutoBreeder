@@ -25,7 +25,6 @@ these buttons for our use.
  */
 
 #include "Joystick.h"
-#include "instructions.h"
 
 extern const uint8_t image_data[0x12c1] PROGMEM;
 
@@ -218,19 +217,6 @@ void take_action(action_t action, USB_JoystickReport_Input_t* const ReportData) 
 }
 
 
-typedef enum {
-	SYNC_CONTROLLER,
-	FLY_TO_NURSERY,
-	APPROACH_NPC,
-	PICK_SWAP_SLOT,
-	SWAP_POKEMON,
-	BREEDING_PREP,
-	BREEDING,
-	BREATHE,
-	NEXT_ROUND,
-	DONE
-} State_t;
-
 State_t state = SYNC_CONTROLLER;
 
 #define ECHOES 2
@@ -242,7 +228,7 @@ int bufindex = 0;
 int portsval = 0;
 int swap_slot_number = 0;
 
-inline void do_steps(const command_t* steps, uint16_t steps_size, USB_JoystickReport_Input_t* const ReportData, State_t nextState, int add_swap_slot_number) {
+void do_steps(const command_t* steps, uint16_t steps_size, USB_JoystickReport_Input_t* const ReportData, State_t nextState, int add_swap_slot_number) {
 	take_action(steps[bufindex].action, ReportData);
 	duration_count ++;
 	
@@ -294,47 +280,10 @@ void GetNextReport(USB_JoystickReport_Input_t* const ReportData) {
 
 		case FLY_TO_NURSERY:
 			do_steps(fly_to_breading_steps, ARRAY_SIZE(fly_to_breading_steps), ReportData, APPROACH_NPC, 0);
-			// take_action(fly_to_breading_steps[bufindex], ReportData);
-			// duration_count ++;
-			
-			// if (duration_count > fly_to_breading_steps[bufindex].duration)
-			// {
-			// 	bufindex ++;
-			// 	duration_count = 0;
-			// }
-
-			// if (bufindex > (int)(sizeof(fly_to_breading_steps) / sizeof(fly_to_breading_steps[0])) - 1) 
-			// {
-			// 	bufindex = 0;
-			// 	duration_count = 0;
-
-			// 	state = APPROACH_NPC;
-
-			// 	reset_report(ReportData);
-			// }
 			break;
 
 		case APPROACH_NPC:
 			do_steps(get_egg_steps, ARRAY_SIZE(get_egg_steps), ReportData, PICK_SWAP_SLOT, 0);
-			// take_action(get_egg_steps[bufindex], ReportData);
-			// duration_count ++;
-			
-			// if (duration_count > get_egg_steps[bufindex].duration)
-			// {
-			// 	bufindex ++;
-			// 	duration_count = 0;
-			// }
-
-			// if (bufindex > (int)(sizeof(get_egg_steps) / sizeof(get_egg_steps[0])) - 1) 
-			// {
-			// 	bufindex = 0;
-			// 	duration_count = 0;
-
-			// 	state = PICK_SWAP_SLOT;
-
-			// 	reset_report(ReportData);
-			// }
-		
 			break;
 	
 		case PICK_SWAP_SLOT:
@@ -359,47 +308,8 @@ void GetNextReport(USB_JoystickReport_Input_t* const ReportData) {
 				reset_report(ReportData);
 			}
 			break;
-
-			// take_action(swap_slot_3[bufindex], ReportData);
-			// duration_count ++;
-			
-			// if (duration_count > swap_slot_3[bufindex].duration)
-			// {
-			// 	bufindex ++;
-			// 	duration_count = 0;
-			// }
-
-			// if (bufindex > (int)(sizeof(swap_slot_3) / 
-			//                      sizeof(swap_slot_3[0])) - 1) 
-			// {
-			// 	bufindex = 0;
-			// 	duration_count = 0;
-			// 	swap_slot_number = (swap_slot_number + 1) % 5;
-
-			// 	state = SWAP_POKEMON;
-			// }
-			// break;
-
 		case SWAP_POKEMON:
 			do_steps(swap_pokemon_steps, ARRAY_SIZE(swap_pokemon_steps), ReportData, BREEDING_PREP, 0);
-			// take_action(swap_pokemon_steps[bufindex], ReportData);
-			// duration_count ++;
-
-			// if (duration_count > swap_pokemon_steps[bufindex].duration)
-			// {
-			// 	bufindex ++;
-			// 	duration_count = 0;
-			// }
-
-			// if (bufindex > (int)(sizeof(swap_pokemon_steps) / sizeof(swap_pokemon_steps[0])) - 1) 
-			// {
-			// 	bufindex = 0;
-			// 	duration_count = 0;
-
-			// 	state = BREEDING_PREP;
-
-			// 	reset_report(ReportData);
-			// }
 			break;
 
 		case BREEDING_PREP:
@@ -435,13 +345,7 @@ void GetNextReport(USB_JoystickReport_Input_t* const ReportData) {
 			#endif
 			return;
 	}
-
-	// // Inking
-	// if (state != SYNC_CONTROLLER && state != SYNC_POSITION)
-	// 	if (pgm_read_byte(&(image_data[(xpos / 8) + (ypos * 40)])) & 1 << (xpos % 8))
-	// 		ReportData->Button |= SWITCH_A;
-
-	// Prepare to echo this report
+	
 	memcpy(&last_report, ReportData, sizeof(USB_JoystickReport_Input_t));
 	echoes = ECHOES;
 

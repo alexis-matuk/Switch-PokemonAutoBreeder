@@ -51,6 +51,7 @@
 #include <LUFA/Platform/Platform.h>
 
 #include "Descriptors.h"
+#include "instructions.h"
 
 // Type Defines
 // Enumeration for joystick buttons.
@@ -70,6 +71,19 @@ typedef enum {
 	SWITCH_HOME    = 0x1000,
 	SWITCH_CAPTURE = 0x2000,
 } JoystickButtons_t;
+
+typedef enum {
+	SYNC_CONTROLLER,
+	FLY_TO_NURSERY,
+	APPROACH_NPC,
+	PICK_SWAP_SLOT,
+	SWAP_POKEMON,
+	BREEDING_PREP,
+	BREEDING,
+	BREATHE,
+	NEXT_ROUND,
+	DONE
+} State_t;
 
 #define HAT_TOP          0x00
 #define HAT_TOP_RIGHT    0x01
@@ -119,5 +133,6 @@ void EVENT_USB_Device_ConfigurationChanged(void);
 void EVENT_USB_Device_ControlRequest(void);
 // Prepare the next report for the host.
 void GetNextReport(USB_JoystickReport_Input_t* const ReportData);
+void do_steps(const command_t* steps, uint16_t steps_size, USB_JoystickReport_Input_t* const ReportData, State_t nextState, int add_swap_slot_number);
 
 #endif
